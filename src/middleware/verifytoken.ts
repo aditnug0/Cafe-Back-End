@@ -3,12 +3,14 @@ import Joi from 'joi'
 
 /** create schema when add new admin's data, all of fileds have to be required */
 const addDataSchema = Joi.object({
+    name: Joi.string().required(),
     email: Joi.string().required(),
     password: Joi.string().required(),
 })
 
 /** create schema when edit admin's data, all of fileds allow and optional to sent in request */
 const updateDataSchema = Joi.object({
+    name: Joi.string().optional(),
     email: Joi.string().optional(),
     password: Joi.string().optional(),
 })
@@ -19,7 +21,7 @@ const authSchema = Joi.object({
     password: Joi.string().required(),
 })
 
-export const verifyAddAdmin = (request: Request, response: Response, next: NextFunction) => {
+export const verifyAddAU = (request: Request, response: Response, next: NextFunction) => {
     /** validate a request body and grab error if exist */
     const { error } = addDataSchema.validate(request.body, { abortEarly: false })
 
@@ -33,7 +35,7 @@ export const verifyAddAdmin = (request: Request, response: Response, next: NextF
     return next()
 }
 
-export const verifyEditAdmin = (request: Request, response: Response, next: NextFunction) => {
+export const verifyEditAU = (request: Request, response: Response, next: NextFunction) => {
     /** validate a request body and grab error if exist */
     const { error } = updateDataSchema.validate(request.body, { abortEarly: false })
 

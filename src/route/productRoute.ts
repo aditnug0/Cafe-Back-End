@@ -1,22 +1,22 @@
 import express from "express";
 import { verifyAdmin } from "../middleware/verify";
 import uploadFile from "../middleware/uploadFile";
-import { createFood, deleteFood, readFood, updateFood } from "../controller/foodController";
-import { verifyAddFood, verifyEditFood } from "../middleware/verifyaddFood";
+import { createProduct, deleteProduct, readProduct, updateProduct, } from "../controller/productController";
+import { verifyAddProduct, verifyEditProduct } from "../middleware/verifyProduct";
 const app = express();
 
 // allow to read json from the body
 app.use(express.json());
 
 // adress for get admin data
-app.get(`/food`, readFood);
+app.get(`/food`, readProduct);
 
 // adress for add new admin
-app.post(`/food`, [uploadFile.single("image"), verifyAdmin, verifyAddFood], createFood);
+app.post(`/food`, [uploadFile.single("image"), verifyAdmin, verifyAddProduct], createProduct);
 
-app.put(`/food/:item_id`, [uploadFile.single("image"), verifyAdmin, verifyAddFood], updateFood);
+app.put(`/food/:item_id`, [uploadFile.single("image"), verifyAdmin, verifyEditProduct], updateProduct);
 
-app.delete(`/food/:item_id`, verifyAdmin, deleteFood);
+app.delete(`/food/:item_id`, verifyAdmin, deleteProduct);
 // import express from "express"
 // import { verifyToken } from "../middlewares/authorization"
 // import { createEgg, dropEgg, getAllEggs, updateEgg } from "../controllers/eggController"

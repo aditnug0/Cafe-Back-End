@@ -1,7 +1,6 @@
 import express from "express";
 import { verifyAdmin } from "../middleware/verify";
 import { createOrder, deleteOrder, readOrder, updateOrder } from "../controller/olController";
-import { verifyAddAdmin, verifyEditAdmin } from "../middleware/verifytoken";
 import { verifyAddOrder, verifyEditOrder } from "../middleware/verifyOrder";
 const app = express();
 

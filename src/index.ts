@@ -2,16 +2,16 @@
 /** import library express */
 import express, { Request, Response } from "express";
 import routeAdmin from "./route/adminRoute";
-import routeTable from "./route/olRoute";// order list
-import routeFood from "./route/foodRoute";
-import routeTransaction from "./route/odRoute";
+import routeUser from "./route/userRoute"
+import routeTransaction from "./route/olRoute";// order list
+import routeProduct from "./route/productRoute";
 
 /**buat wadah inisiasi express */
 
 const app = express();
 
 /** mendefinisikan PORT berjalannya server */
-const PORT = 12;
+const PORT = 69;
 
 /**test*/
 app.get(`/see`, (request: Request, response: Response) => {
@@ -28,10 +28,9 @@ app.get(`/see`, (request: Request, response: Response) => {
 
 // register route of event
 app.use(routeAdmin)
-app.use(routeTable)
-app.use(routeFood)
+app.use(routeUser)
 app.use(routeTransaction)
-
+app.use(routeProduct)
 
 
 /**run server  */

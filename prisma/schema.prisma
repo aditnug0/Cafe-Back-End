@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = "mysql://root@localhost:3306/ukl"
+  url      = "mysql://root@localhost:3306/ta"
 }
 
 model admin {
@@ -22,32 +22,43 @@ model admin {
   updatedAt DateTime @updatedAt
 }
 
+model user {
+  userId     Int          @id @default(autoincrement())
+  name       String       @default("")
+  email      String       @default("")
+  password   String       @default("")
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  order_list order_list[]
+}
+
 model order_detail {
-  detail_id    Int        @id @default(autoincrement())
-  order_id     Int        @default(0)
-  food_id      Int        @default(0)
-  quantity     Int        @default(0)
-  price        Float      @default(0) @db.Double
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  order_detail order_list @relation(fields: [order_id], references: [list_id])
-  food_detail  food       @relation(fields: [food_id], references: [item_id])
+  detail_id      Int        @id @default(autoincrement())
+  order_id       Int        @default(0)
+  product_id     Int        @default(0)
+  quantity       Int        @default(0)
+  price          Float      @default(0) @db.Double
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  order_detail   order_list @relation(fields: [order_id], references: [list_id])
+  product_detail product    @relation(fields: [product_id], references: [item_id])
 }
 
 model order_list {
-  list_id       Int            @id @default(autoincrement())
-  customer_name String         @default("")
-  table_number  String         @default("")
-  order_date    String         @default("")
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  order_detail  order_detail[]
+  list_id      Int            @id @default(autoincrement())
+  cust_id      Int            @default(0)
+  order_date   String         @default("")
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  cust_detail  user           @relation(fields: [cust_id], references: [userId])
+  order_detail order_detail[]
 }
 
-model food {
+model product {
   item_id      Int            @id @default(autoincrement())
   name         String         @default("")
-  spicy_level  String         @default("")
+  qty          Int            @default(0)
+  description  String         @default("")
   price        Float          @default(0) @db.Double
   image        String         @default("")
   createdAt    DateTime       @default(now())

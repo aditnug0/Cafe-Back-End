@@ -5,12 +5,11 @@ import Joi from 'joi'
 const detailSchema = Joi.object({
     quantity: Joi.number().min(1).required(),
     price: Joi.number().min(1).optional(),
-    food_id: Joi.number().min(1).optional()
+    product_id: Joi.number().min(1).optional()
 })
 /** create schema when add new pack's data, all of fileds have to be required */
 const addDataSchema = Joi.object({
-    customer_name: Joi.string().required(),
-    table_number: Joi.string().required(),
+    cust_id: Joi.string().required(),
     order_date: Joi.string().required(),
     order_detail: Joi.array().items(detailSchema).min(1).required()
 })
@@ -18,8 +17,7 @@ const addDataSchema = Joi.object({
 
 /** create schema when edit pack's data, all of fileds allow and optional to sent in request */
 const updateDataSchema = Joi.object({
-    customer_name: Joi.string().optional(),
-    table_number: Joi.string().optional(),
+    cust_id: Joi.string().optional(),
     order_date: Joi.string().optional(),
     order_detail: Joi.array().items(detailSchema).min(1).optional()
 

@@ -1,8 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 import { Request, Response, request, response } from "express";
-import md5 from "md5"
-import { sign } from "jsonwebtoken";
-import { Sign } from "crypto";
 
 // create an object from prisma
 const prisma = new PrismaClient();
@@ -11,20 +8,19 @@ const prisma = new PrismaClient();
 // asyncronous = fungsi yang berjalan secara pararel
 const createOrder = async (request: Request, response: Response) => {
     try {
-        const { customer_name, table_number, order_date, order_detail } = request.body;
+        const { cust_id, order_date, order_detail } = request.body;
 
         // Create order list with associated order details
         const newOrderList = await prisma.order_list.create({
             data: {
-                customer_name,
-                table_number,
+                cust_id,
                 order_date,
                 // : new Date(order_date).toISOString(),
                 order_detail: {
                     createMany: {
                         data: order_detail.map((detail: any) => ({
                             orderId: detail.order_id,
-                            food_id: detail.food_id,
+                            product_id: detail.product_id,
                             quantity: detail.quantity,
                             price: detail.price
                         }))
@@ -55,9 +51,10 @@ const readOrder = async (request: Request, response: Response) => {
 
         const orderList = await prisma.order_list.findMany({
             include: {
+                cust_detail: true,
                 order_detail: {
                     include: {
-                        food_detail: true
+                        product_detail: true
                     }
                 }
             }
@@ -91,7 +88,7 @@ const updateOrder = async (request: Request, response: Response) => {
 
     try {
         const { list_id } = request.params;
-        const { customer_name, table_number, order_date, order_detail } = request.body;
+        const { cust_id, order_date, order_detail } = request.body;
 
         if (!list_id) {
             return response.status(400).json({
@@ -118,8 +115,7 @@ const updateOrder = async (request: Request, response: Response) => {
         const updatedOrder = await prisma.order_list.update({
             where: { list_id: Number(list_id) },
             data: {
-                customer_name: customer_name || findOrder.customer_name,
-                table_number: table_number || findOrder.table_number,
+                cust_id: cust_id || findOrder.cust_id,
                 order_date: order_date || findOrder.order_date,
                 order_detail: {
                     updateMany: order_detail.map((detail: any) => ({
@@ -127,7 +123,7 @@ const updateOrder = async (request: Request, response: Response) => {
                             list_id: detail.list_id
                         }, // Provide the ID of the order detail to update
                         data: {
-                            foodId: detail.food_id,
+                            product_id: detail.product_id,
                             quantity: detail.quantity,
                             price: detail.price
                         }

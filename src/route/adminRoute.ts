@@ -1,7 +1,7 @@
 import express from "express";
 import { verifyAdmin } from "../middleware/verify";
-import { verifyAuthentication } from "../middleware/verifytoken";
-import { createAdmin, deleteAdmin, login, readAdmin, updateAdmin } from "../controller/adminController";
+import { verifyAddAU, verifyAuthentication, verifyEditAU } from "../middleware/verifytoken";
+import { createAdmin, deleteAdmin, loginAdmin, readAdmin, updateAdmin } from "../controller/adminController";
 const app = express();
 
 // allow to read json from the body
@@ -11,13 +11,13 @@ app.use(express.json());
 app.get(`/admin`, verifyAdmin, readAdmin);
 
 // adress for add new admin
-app.post(`/admin`, verifyAdmin, createAdmin);
+app.post(`/admin`, verifyAdmin, verifyAddAU, createAdmin);
 
-app.put(`/admin/:adminId`, verifyAdmin, updateAdmin);
+app.put(`/admin/:adminId`, verifyAdmin, verifyEditAU, updateAdmin);
 
 app.delete(`/admin/:adminId`, verifyAdmin, deleteAdmin);
 
-app.post(`/admin/login`, verifyAuthentication, login);
+app.post(`/admin/login`, verifyAuthentication, loginAdmin);
 
 
 export default app;
