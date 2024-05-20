@@ -7,7 +7,7 @@ const addDataSchema = Joi.object({
     qty: Joi.number().min(1).required(),
     description: Joi.string().required(),
     price: Joi.number().min(1).required(),
-    image: Joi.allow().required()
+    image: Joi.allow().optional()
 })
 
 /** create schema when edit egg's data, all of fileds allow and optional to sent in request */

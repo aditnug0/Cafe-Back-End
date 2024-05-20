@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyAdmin } from "../middleware/verify";
+import { verifyAdmin, verifyUser } from "../middleware/verify";
 import { createOrder, deleteOrder, readOrder, updateOrder } from "../controller/olController";
 import { verifyAddOrder, verifyEditOrder } from "../middleware/verifyOrder";
 const app = express();
@@ -11,7 +11,7 @@ app.use(express.json());
 app.get(`/table`, verifyAdmin, readOrder);
 
 // adress for add new admin
-app.post(`/table`, verifyAdmin, verifyAddOrder, createOrder);
+app.post(`/table`, verifyUser, verifyAddOrder, createOrder);
 
 app.put(`/table/:list_id`, verifyAdmin, verifyEditOrder, updateOrder);
 

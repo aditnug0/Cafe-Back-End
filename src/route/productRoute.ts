@@ -9,14 +9,14 @@ const app = express();
 app.use(express.json());
 
 // adress for get admin data
-app.get(`/food`, readProduct);
+app.get(`/product`, readProduct);
 
 // adress for add new admin
-app.post(`/food`, [uploadFile.single("image"), verifyAdmin, verifyAddProduct], createProduct);
+app.post(`/product`, [uploadFile.single("image"), verifyAdmin, verifyAddProduct], createProduct);
 
-app.put(`/food/:item_id`, [uploadFile.single("image"), verifyAdmin, verifyEditProduct], updateProduct);
+app.put(`/product/:item_id`, [uploadFile.single("image"), verifyAdmin, verifyEditProduct], updateProduct);
 
-app.delete(`/food/:item_id`, verifyAdmin, deleteProduct);
+app.delete(`/product/:item_id`, verifyAdmin, deleteProduct);
 // import express from "express"
 // import { verifyToken } from "../middlewares/authorization"
 // import { createEgg, dropEgg, getAllEggs, updateEgg } from "../controllers/eggController"

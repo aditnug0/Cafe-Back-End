@@ -9,7 +9,7 @@ const detailSchema = Joi.object({
 })
 /** create schema when add new pack's data, all of fileds have to be required */
 const addDataSchema = Joi.object({
-    cust_id: Joi.string().required(),
+    cust_id: Joi.number().required(),
     order_date: Joi.string().required(),
     order_detail: Joi.array().items(detailSchema).min(1).required()
 })
