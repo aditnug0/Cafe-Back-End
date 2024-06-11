@@ -12,22 +12,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.loginAdmin = exports.deleteAdmin = exports.updateAdmin = exports.readAdmin = exports.createAdmin = void 0;
+exports.loginUser = exports.deleteUser = exports.updateUser = exports.readUser = exports.createUser = void 0;
 const client_1 = require("@prisma/client");
 const md5_1 = __importDefault(require("md5"));
 const jsonwebtoken_1 = require("jsonwebtoken");
 // create an object from prisma
 const prisma = new client_1.PrismaClient();
-// create a function to "create" new admin
+// create a function to "create" new user
 // asyncronous = fungsi yang berjalan secara pararel
-const createAdmin = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
+const createUser = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // read a request from body
         const name = request.body.name;
         const email = request.body.email;
         const password = (0, md5_1.default)(request.body.password);
-        //insert to admin table using prisma
-        const newData = yield prisma.admin.create({
+        //insert to user table using prisma
+        const newData = yield prisma.user.create({
             data: {
                 name: name,
                 email: email,
@@ -36,7 +36,7 @@ const createAdmin = (request, response) => __awaiter(void 0, void 0, void 0, fun
         });
         return response.status(200).json({
             status: true,
-            message: `Admin data has been created`,
+            message: `User data has been created`,
             data: newData,
         });
     }
@@ -47,9 +47,9 @@ const createAdmin = (request, response) => __awaiter(void 0, void 0, void 0, fun
         });
     }
 });
-exports.createAdmin = createAdmin;
-// create a function to READ admin
-const readAdmin = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
+exports.createUser = createUser;
+// create a function to READ user
+const readUser = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
         // pagination
@@ -59,7 +59,7 @@ const readAdmin = (request, response) => __awaiter(void 0, void 0, void 0, funct
         const keyword = ((_a = request.query.keyword) === null || _a === void 0 ? void 0 : _a.toString()) || "";
         // await untuk memebri delay pada sistem asyncronous sehingga berjalan
         // seperti syncronous dan menunggu sistem sebelumnya
-        const adminData = yield prisma.admin.findMany({
+        const userData = yield prisma.user.findMany({
             //untuk mendefinisikan jml data yang diambil
             take: qty,
             skip: (page - 1) * qty,
@@ -69,12 +69,12 @@ const readAdmin = (request, response) => __awaiter(void 0, void 0, void 0, funct
                     { email: { contains: keyword } },
                 ]
             },
-            orderBy: { adminId: "asc" }
+            orderBy: { userId: "asc" }
         });
         return response.status(200).json({
             status: true,
-            message: `Admin data has been loaded`,
-            data: adminData,
+            message: `User data has been loaded`,
+            data: userData,
         });
     }
     catch (error) {
@@ -84,39 +84,39 @@ const readAdmin = (request, response) => __awaiter(void 0, void 0, void 0, funct
         });
     }
 });
-exports.readAdmin = readAdmin;
+exports.readUser = readUser;
 // baru
-// function for update admin
-const updateAdmin = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
+// function for update user
+const updateUser = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // read admin id that sent from url
-        const adminId = request.params.adminId;
+        // read user id that sent from url
+        const userId = request.params.userId;
         // read data perubahan
         const name = request.body.name;
         const email = request.body.email;
         const password = (0, md5_1.default)(request.body.password);
         // make sure that data has existed
-        const findAdmin = yield prisma.admin.findFirst({
-            where: { adminId: Number(adminId) }
+        const findUser = yield prisma.user.findFirst({
+            where: { userId: Number(userId) }
         });
-        if (!findAdmin) {
+        if (!findUser) {
             return response.status(400).json({
                 status: false,
-                message: `Admin data not found`
+                message: `User data not found`
             });
         }
-        const dataAdmin = yield prisma.admin.update({
-            where: { adminId: Number(adminId) },
+        const dataUser = yield prisma.user.update({
+            where: { userId: Number(userId) },
             data: {
-                name: name || findAdmin.name,
-                email: email || findAdmin.email,
-                password: password || findAdmin.password
+                name: name || findUser.name,
+                email: email || findUser.email,
+                password: password || findUser.password
             }
         });
         return response.status(200).json({
             status: true,
             message: `Data has been updated`,
-            data: dataAdmin
+            data: dataUser
         });
     }
     catch (error) {
@@ -126,30 +126,30 @@ const updateAdmin = (request, response) => __awaiter(void 0, void 0, void 0, fun
         });
     }
 });
-exports.updateAdmin = updateAdmin;
-// create a function to delete admin
-const deleteAdmin = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
+exports.updateUser = updateUser;
+// create a function to delete user
+const deleteUser = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // get admin id from url 
-        const adminId = request.params.adminId;
-        // make sure that admin is exist 
-        const findAdmins = yield prisma.admin.findFirst({
-            where: { adminId: Number(adminId) }
+        // get user id from url 
+        const userId = request.params.userId;
+        // make sure that user is exist 
+        const findUsers = yield prisma.user.findFirst({
+            where: { userId: Number(userId) }
         });
-        if (!findAdmins) {
+        if (!findUsers) {
             return response.status(400).json({
                 status: false,
                 message: `Data not found`
             });
         }
-        // execute for delete admin
-        const dataAdmin = yield prisma.admin.delete({
-            where: { adminId: Number(adminId) }
+        // execute for delete user
+        const dataUser = yield prisma.user.delete({
+            where: { userId: Number(userId) }
         });
         // return response 
         return response.status(200).json({
             status: true,
-            message: `Admin data has been deleted `
+            message: `User data has been deleted `
         });
     }
     catch (error) {
@@ -159,17 +159,17 @@ const deleteAdmin = (request, response) => __awaiter(void 0, void 0, void 0, fun
         });
     }
 });
-exports.deleteAdmin = deleteAdmin;
-const loginAdmin = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
+exports.deleteUser = deleteUser;
+const loginUser = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const email = request.body.email;
         const password = (0, md5_1.default)(request.body.password);
-        const admin = yield prisma.admin.findFirst({
+        const user = yield prisma.user.findFirst({
             where: { email: email, password: password }
         });
-        if (admin) {
-            const payload = admin;
-            const secretkey = 'admin🤓';
+        if (user) {
+            const payload = user;
+            const secretkey = 'user☝️';
             const token = (0, jsonwebtoken_1.sign)(payload, secretkey);
             return response.status(200).json({
                 status: true,
@@ -191,4 +191,4 @@ const loginAdmin = (request, response) => __awaiter(void 0, void 0, void 0, func
         });
     }
 });
-exports.loginAdmin = loginAdmin;
+exports.loginUser = loginUser;

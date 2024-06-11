@@ -7,13 +7,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /** import library express */
 const express_1 = __importDefault(require("express"));
 const adminRoute_1 = __importDefault(require("./route/adminRoute"));
+const userRoute_1 = __importDefault(require("./route/userRoute"));
 const olRoute_1 = __importDefault(require("./route/olRoute")); // order list
-const foodRoute_1 = __importDefault(require("./route/foodRoute"));
-const odRoute_1 = __importDefault(require("./route/odRoute"));
+const productRoute_1 = __importDefault(require("./route/productRoute"));
 /**buat wadah inisiasi express */
 const app = (0, express_1.default)();
 /** mendefinisikan PORT berjalannya server */
-const PORT = 12;
+const PORT = 69;
 /**test*/
 app.get(`/see`, (request, response) => {
     /**ini adalah proses handle request dengan url adress
@@ -27,9 +27,9 @@ app.get(`/see`, (request, response) => {
 });
 // register route of event
 app.use(adminRoute_1.default);
+app.use(userRoute_1.default);
 app.use(olRoute_1.default);
-app.use(foodRoute_1.default);
-app.use(odRoute_1.default);
+app.use(productRoute_1.default);
 /**run server  */
 app.listen(PORT, () => {
     console.log(`😋 Server running on port ${PORT}`);

@@ -13,54 +13,58 @@ exports.deleteOrder = exports.updateOrder = exports.readOrder = exports.createOr
 const client_1 = require("@prisma/client");
 // create an object from prisma
 const prisma = new client_1.PrismaClient();
-// create a function to "create" new admin
-// asyncronous = fungsi yang berjalan secara pararel
 const createOrder = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
-    // try {
-    //     // read a request from body
-    //     const customer_name = request.body.customer_name;
-    //     const table_number = request.body.table_number;
-    //     const order_date = request.body.order_date
-    //     //insert to admin table using prisma
-    //     const newData = await prisma.order_list.create({
-    //         data: {
-    //             customer_name: customer_name,
-    //             table_number: table_number,
-    //             order_date: order_date
-    //         }
-    //     });
-    //     return response.status(200).json({
-    //         status: true,
-    //         message: `Order data has been created`,
-    //         data: newData,
-    //     });
-    // } catch (error) {
-    //     return response.status(500).json({
-    //         status: false,
-    //         message: error,
-    //     });
-    // }
     try {
-        const { customer_name, table_number, order_date, order_detail } = request.body;
+        const { cust_id, order_date, order_detail } = request.body;
+        // Fetch product prices and quantities for each order detail
+        const productIds = order_detail.map((detail) => detail.product_id);
+        const products = yield prisma.product.findMany({
+            where: {
+                item_id: { in: productIds }
+            },
+            select: {
+                item_id: true,
+                price: true,
+                qty: true
+            }
+        });
+        // Create a map of product prices and quantities
+        const productMap = {};
+        products.forEach(product => {
+            productMap[product.item_id] = { price: product.price, qty: product.qty };
+        });
+        // Prepare order details with calculated prices and check for sufficient stock
+        const orderDetails = order_detail.map((detail) => {
+            const product = productMap[detail.product_id];
+            if (product.qty < detail.quantity) {
+                throw new Error(`Insufficient stock for product ID: ${detail.product_id}`);
+            }
+            return {
+                order_id: detail.order_id,
+                product_id: detail.product_id,
+                quantity: detail.quantity,
+                price: detail.quantity * product.price
+            };
+        });
         // Create order list with associated order details
         const newOrderList = yield prisma.order_list.create({
             data: {
-                customer_name,
-                table_number,
+                cust_id,
                 order_date,
-                // : new Date(order_date).toISOString(),
                 order_detail: {
                     createMany: {
-                        data: order_detail.map((detail) => ({
-                            orderId: detail.order_id,
-                            food_id: detail.food_id,
-                            quantity: detail.quantity,
-                            price: detail.price
-                        }))
+                        data: orderDetails
                     }
                 }
             }
         });
+        // Update product quantities
+        yield Promise.all(order_detail.map((detail) => __awaiter(void 0, void 0, void 0, function* () {
+            yield prisma.product.update({
+                where: { item_id: detail.product_id },
+                data: { qty: { decrement: detail.quantity } }
+            });
+        })));
         return response.status(201).json({
             status: true,
             data: newOrderList,
@@ -78,42 +82,13 @@ const createOrder = (request, response) => __awaiter(void 0, void 0, void 0, fun
 exports.createOrder = createOrder;
 // create a function to READ admin
 const readOrder = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
-    // try {
-    //     // pagination
-    //     const page = Number(request.query.page) || 1;
-    //     const qty = Number(request.query.qty) || 5;
-    //     // searching
-    //     const keyword = request.query.keyword?.toString() || "";
-    //     // await untuk memebri delay pada sistem asyncronous sehingga berjalan
-    //     // seperti syncronous dan menunggu sistem sebelumnya
-    //     const orderData = await prisma.order_list.findMany({
-    //         //untuk mendefinisikan jml data yang diambil
-    //         take: qty,
-    //         skip: (page - 1) * qty,
-    //         where: {
-    //             OR: [
-    //                 { customer_name: { contains: keyword } },
-    //             ]
-    //         },
-    //         orderBy: { list_id: "asc" }
-    //     });
-    //     return response.status(200).json({
-    //         status: true,
-    //         message: `Order data has been loaded`,
-    //         data: orderData,
-    //     });
-    // } catch (error) {
-    //     return response.status(500).json({
-    //         status: false,
-    //         message: error,
-    //     });
-    // }
     try {
         const orderList = yield prisma.order_list.findMany({
             include: {
+                cust_detail: true,
                 order_detail: {
                     include: {
-                        food_detail: true
+                        product_detail: true
                     }
                 }
             }
@@ -139,48 +114,10 @@ const readOrder = (request, response) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.readOrder = readOrder;
-// baru
-// function for update admin
 const updateOrder = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
-    // try {
-    //     // read admin id that sent from url
-    //     const list_id = request.params.list_id
-    //     // read data perubahan
-    //     const customer_name = request.body.customer_name
-    //     const table_number = request.body.table_number
-    //     const order_date = request.body.order_date
-    //     // make sure that data has existed
-    //     const findOrder = await prisma.order_list.findFirst({
-    //         where: { list_id: Number(list_id) }
-    //     })
-    //     if (!findOrder) {
-    //         return response.status(400).json({
-    //             status: false,
-    //             message: `Order data not found`
-    //         })
-    //     }
-    //     const dataOrder = await prisma.order_list.update({
-    //         where: { list_id: Number(list_id) },
-    //         data: {
-    //             customer_name: customer_name || findOrder.customer_name,
-    //             table_number: table_number || findOrder.table_number,
-    //             order_date: order_date || findOrder.order_date
-    //         }
-    //     })
-    //     return response.status(200).json({
-    //         status: true,
-    //         message: `Data has been updated`,
-    //         data: dataOrder
-    //     })
-    // } catch (error) {
-    //     return response.status(500).json({
-    //         status: false,
-    //         message: error,
-    //     });
-    // }
     try {
         const { list_id } = request.params;
-        const { customer_name, table_number, order_date, order_detail } = request.body;
+        const { cust_id, order_date, order_detail } = request.body;
         if (!list_id) {
             return response.status(400).json({
                 status: false,
@@ -199,20 +136,49 @@ const updateOrder = (request, response) => __awaiter(void 0, void 0, void 0, fun
                 message: 'Order not found'
             });
         }
+        // Fetch product prices and quantities for each order detail
+        const productIds = order_detail.map((detail) => detail.product_id);
+        const products = yield prisma.product.findMany({
+            where: {
+                item_id: { in: productIds }
+            },
+            select: {
+                item_id: true,
+                price: true,
+                qty: true
+            }
+        });
+        // Create a map of product prices and quantities
+        const productMap = {};
+        products.forEach(product => {
+            productMap[product.item_id] = { price: product.price, qty: product.qty };
+        });
+        // Prepare order details with calculated prices and check for sufficient stock
+        const orderDetails = order_detail.map((detail) => {
+            const product = productMap[detail.product_id];
+            if (product.qty < detail.quantity) {
+                throw new Error(`Insufficient stock for product ID: ${detail.product_id}`);
+            }
+            return {
+                order_id: detail.order_id,
+                product_id: detail.product_id,
+                quantity: detail.quantity,
+                price: detail.quantity * product.price
+            };
+        });
         // Update the order
         const updatedOrder = yield prisma.order_list.update({
             where: { list_id: Number(list_id) },
             data: {
-                customer_name: customer_name || findOrder.customer_name,
-                table_number: table_number || findOrder.table_number,
+                cust_id: cust_id || findOrder.cust_id,
                 order_date: order_date || findOrder.order_date,
                 order_detail: {
-                    updateMany: order_detail.map((detail) => ({
+                    updateMany: orderDetails.map((detail) => ({
                         where: {
-                            list_id: detail.list_id
+                            detail_id: detail.detail_id
                         }, // Provide the ID of the order detail to update
                         data: {
-                            foodId: detail.food_id,
+                            product_id: detail.product_id,
                             quantity: detail.quantity,
                             price: detail.price
                         }
@@ -220,6 +186,13 @@ const updateOrder = (request, response) => __awaiter(void 0, void 0, void 0, fun
                 }
             },
         });
+        // Update product quantities
+        yield Promise.all(order_detail.map((detail) => __awaiter(void 0, void 0, void 0, function* () {
+            yield prisma.product.update({
+                where: { item_id: detail.product_id },
+                data: { qty: { decrement: detail.quantity } }
+            });
+        })));
         return response.status(200).json({
             status: true,
             data: updatedOrder,
@@ -237,34 +210,6 @@ const updateOrder = (request, response) => __awaiter(void 0, void 0, void 0, fun
 exports.updateOrder = updateOrder;
 // create a function to delete admin
 const deleteOrder = (request, response) => __awaiter(void 0, void 0, void 0, function* () {
-    // try {
-    //     // get admin id from url 
-    //     const list_id = request.params.list_id
-    //     // make sure that admin is exist 
-    //     const findOrders = await prisma.order_list.findFirst({
-    //         where: { list_id: Number(list_id) }
-    //     })
-    //     if (!findOrders) {
-    //         return response.status(400).json({
-    //             status: false,
-    //             message: `Data not found`
-    //         })
-    //     }
-    //     // execute for delete admin
-    //     const dataOrder = await prisma.order_list.delete({
-    //         where: { list_id: Number(list_id) }
-    //     })
-    //     // return response 
-    //     return response.status(200).json({
-    //         status: true,
-    //         message: `Order data has been deleted `
-    //     })
-    // } catch (error) {
-    //     return response.status(500).json({
-    //         status: false,
-    //         message: error,
-    //     });
-    // }
     try {
         const { list_id } = request.params;
         if (!list_id) {
@@ -293,37 +238,3 @@ const deleteOrder = (request, response) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.deleteOrder = deleteOrder;
-// export const getOrderListById = async (req: Request, res: Response) => {
-//     try {
-//         const { id } = req.params;
-//         const orderList = await prisma.order_list.findUnique({
-//             where: {
-//                 id: parseInt(id)
-//             },
-//             include: {
-//                 order_detail: {
-//                     include: {
-//                         foodId: true
-//                     }
-//                 }
-//             }
-//         });
-//         if (!orderList) {
-//             return res.status(404).json({
-//                 status: false,
-//                 message: 'Order list not found'
-//             });
-//         }
-//         return res.status(200).json({
-//             status: true,
-//             data: orderList,
-//             message: 'Order list found'
-//         });
-//     } catch (error) {
-//         console.error('Error getting order list:', error);
-//         return res.status(500).json({
-//             status: false,
-//             message: '[GET ORDERLIST] Internal server error'
-//         });
-//     }
-// };

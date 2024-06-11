@@ -3,26 +3,25 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyEditOrder = exports.verifyAddOrder = void 0;
+exports.verifyEditProduct = exports.verifyAddProduct = void 0;
 const joi_1 = __importDefault(require("joi"));
-const detailSchema = joi_1.default.object({
-    quantity: joi_1.default.number().min(1).required(),
-    price: joi_1.default.number().min(1).optional(),
-    product_id: joi_1.default.number().min(1).optional()
-});
-/** create schema when add new pack's data, all of fileds have to be required */
+/** create schema when add new egg's data, all of fileds have to be required */
 const addDataSchema = joi_1.default.object({
-    cust_id: joi_1.default.number().required(),
-    order_date: joi_1.default.string().required(),
-    order_detail: joi_1.default.array().items(detailSchema).min(1).required()
+    name: joi_1.default.string().required(),
+    qty: joi_1.default.number().min(1).required(),
+    description: joi_1.default.string().required(),
+    price: joi_1.default.number().min(1).required(),
+    image: joi_1.default.allow().optional()
 });
-/** create schema when edit pack's data, all of fileds allow and optional to sent in request */
+/** create schema when edit egg's data, all of fileds allow and optional to sent in request */
 const updateDataSchema = joi_1.default.object({
-    cust_id: joi_1.default.string().optional(),
-    order_date: joi_1.default.string().optional(),
-    order_detail: joi_1.default.array().items(detailSchema).min(1).optional()
+    name: joi_1.default.string().optional(),
+    qty: joi_1.default.number().min(1).optional(),
+    description: joi_1.default.string().optional(),
+    price: joi_1.default.number().min(1).optional(),
+    image: joi_1.default.allow().optional()
 });
-const verifyAddOrder = (request, response, next) => {
+const verifyAddProduct = (request, response, next) => {
     /** validate a request body and grab error if exist */
     const { error } = addDataSchema.validate(request.body, { abortEarly: false });
     if (error) {
@@ -34,8 +33,8 @@ const verifyAddOrder = (request, response, next) => {
     }
     return next();
 };
-exports.verifyAddOrder = verifyAddOrder;
-const verifyEditOrder = (request, response, next) => {
+exports.verifyAddProduct = verifyAddProduct;
+const verifyEditProduct = (request, response, next) => {
     /** validate a request body and grab error if exist */
     const { error } = updateDataSchema.validate(request.body, { abortEarly: false });
     if (error) {
@@ -47,4 +46,4 @@ const verifyEditOrder = (request, response, next) => {
     }
     return next();
 };
-exports.verifyEditOrder = verifyEditOrder;
+exports.verifyEditProduct = verifyEditProduct;

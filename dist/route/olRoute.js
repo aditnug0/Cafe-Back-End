@@ -13,7 +13,7 @@ app.use(express_1.default.json());
 // adress for get admin data
 app.get(`/table`, verify_1.verifyAdmin, olController_1.readOrder);
 // adress for add new admin
-app.post(`/table`, verify_1.verifyAdmin, verifyOrder_1.verifyAddOrder, olController_1.createOrder);
+app.post(`/table`, verify_1.verifyUser, verifyOrder_1.verifyAddOrder, olController_1.createOrder);
 app.put(`/table/:list_id`, verify_1.verifyAdmin, verifyOrder_1.verifyEditOrder, olController_1.updateOrder);
 app.delete(`/table/:list_id`, verify_1.verifyAdmin, olController_1.deleteOrder);
 exports.default = app;

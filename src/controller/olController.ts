@@ -4,30 +4,63 @@ import { Request, Response, request, response } from "express";
 // create an object from prisma
 const prisma = new PrismaClient();
 
-// create a function to "create" new admin
-// asyncronous = fungsi yang berjalan secara pararel
 const createOrder = async (request: Request, response: Response) => {
     try {
         const { cust_id, order_date, order_detail } = request.body;
+
+        // Fetch product prices and quantities for each order detail
+        const productIds = order_detail.map((detail: any) => detail.product_id);
+        const products = await prisma.product.findMany({
+            where: {
+                item_id: { in: productIds }
+            },
+            select: {
+                item_id: true,
+                price: true,
+                qty: true
+            }
+        });
+
+        // Create a map of product prices and quantities
+        const productMap: { [key: number]: { price: number, qty: number } } = {};
+        products.forEach(product => {
+            productMap[product.item_id] = { price: product.price, qty: product.qty };
+        });
+
+        // Prepare order details with calculated prices and check for sufficient stock
+        const orderDetails = order_detail.map((detail: any) => {
+            const product = productMap[detail.product_id];
+            if (product.qty < detail.quantity) {
+                throw new Error(`Insufficient stock for product ID: ${detail.product_id}`);
+            }
+            return {
+                order_id: detail.order_id,
+                product_id: detail.product_id,
+                quantity: detail.quantity,
+                price: detail.quantity * product.price
+            };
+        });
 
         // Create order list with associated order details
         const newOrderList = await prisma.order_list.create({
             data: {
                 cust_id,
                 order_date,
-                // : new Date(order_date).toISOString(),
                 order_detail: {
                     createMany: {
-                        data: order_detail.map((detail: any) => ({
-                            orderId: detail.order_id,
-                            product_id: detail.product_id,
-                            quantity: detail.quantity,
-                            price: detail.price
-                        }))
+                        data: orderDetails
                     }
                 }
             }
         });
+
+        // Update product quantities
+        await Promise.all(order_detail.map(async (detail: any) => {
+            await prisma.product.update({
+                where: { item_id: detail.product_id },
+                data: { qty: { decrement: detail.quantity } }
+            });
+        }));
 
         return response.status(201).json({
             status: true,
@@ -82,10 +115,7 @@ const readOrder = async (request: Request, response: Response) => {
 };
 
 
-// baru
-// function for update admin
 const updateOrder = async (request: Request, response: Response) => {
-
     try {
         const { list_id } = request.params;
         const { cust_id, order_date, order_detail } = request.body;
@@ -111,6 +141,39 @@ const updateOrder = async (request: Request, response: Response) => {
             });
         }
 
+        // Fetch product prices and quantities for each order detail
+        const productIds = order_detail.map((detail: any) => detail.product_id);
+        const products = await prisma.product.findMany({
+            where: {
+                item_id: { in: productIds }
+            },
+            select: {
+                item_id: true,
+                price: true,
+                qty: true
+            }
+        });
+
+        // Create a map of product prices and quantities
+        const productMap: { [key: number]: { price: number, qty: number } } = {};
+        products.forEach(product => {
+            productMap[product.item_id] = { price: product.price, qty: product.qty };
+        });
+
+        // Prepare order details with calculated prices and check for sufficient stock
+        const orderDetails = order_detail.map((detail: any) => {
+            const product = productMap[detail.product_id];
+            if (product.qty < detail.quantity) {
+                throw new Error(`Insufficient stock for product ID: ${detail.product_id}`);
+            }
+            return {
+                order_id: detail.order_id,
+                product_id: detail.product_id,
+                quantity: detail.quantity,
+                price: detail.quantity * product.price
+            };
+        });
+
         // Update the order
         const updatedOrder = await prisma.order_list.update({
             where: { list_id: Number(list_id) },
@@ -118,9 +181,9 @@ const updateOrder = async (request: Request, response: Response) => {
                 cust_id: cust_id || findOrder.cust_id,
                 order_date: order_date || findOrder.order_date,
                 order_detail: {
-                    updateMany: order_detail.map((detail: any) => ({
+                    updateMany: orderDetails.map((detail: any) => ({
                         where: {
-                            list_id: detail.list_id
+                            detail_id: detail.detail_id
                         }, // Provide the ID of the order detail to update
                         data: {
                             product_id: detail.product_id,
@@ -131,6 +194,14 @@ const updateOrder = async (request: Request, response: Response) => {
                 }
             },
         });
+
+        // Update product quantities
+        await Promise.all(order_detail.map(async (detail: any) => {
+            await prisma.product.update({
+                where: { item_id: detail.product_id },
+                data: { qty: { decrement: detail.quantity } }
+            });
+        }));
 
         return response.status(200).json({
             status: true,
@@ -144,7 +215,9 @@ const updateOrder = async (request: Request, response: Response) => {
             message: '[PUT ORDERLIST] Internal server error'
         });
     }
-}
+};
+
+
 // create a function to delete admin
 const deleteOrder = async (request: Request, response: Response) => {
 
@@ -179,41 +252,3 @@ const deleteOrder = async (request: Request, response: Response) => {
 }
 export { createOrder, readOrder, updateOrder, deleteOrder };
 
-
-// export const getOrderListById = async (req: Request, res: Response) => {
-//     try {
-//         const { id } = req.params;
-
-//         const orderList = await prisma.order_list.findUnique({
-//             where: {
-//                 id: parseInt(id)
-//             },
-//             include: {
-//                 order_detail: {
-//                     include: {
-//                         foodId: true
-//                     }
-//                 }
-//             }
-//         });
-
-//         if (!orderList) {
-//             return res.status(404).json({
-//                 status: false,
-//                 message: 'Order list not found'
-//             });
-//         }
-
-//         return res.status(200).json({
-//             status: true,
-//             data: orderList,
-//             message: 'Order list found'
-//         });
-//     } catch (error) {
-//         console.error('Error getting order list:', error);
-//         return res.status(500).json({
-//             status: false,
-//             message: '[GET ORDERLIST] Internal server error'
-//         });
-//     }
-// };

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyAdmin = void 0;
+exports.verifyUser = exports.verifyAdmin = void 0;
 const jsonwebtoken_1 = require("jsonwebtoken");
 const verifyAdmin = (request, response, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -17,7 +17,7 @@ const verifyAdmin = (request, response, next) => __awaiter(void 0, void 0, void 
         const header = request.headers.authorization;
         // membaca data token yang dikirimkan 
         const token = (header === null || header === void 0 ? void 0 : header.split(" ")[1]) || '';
-        const secretkey = 'yummy😋😋';
+        const secretkey = 'admin🤓';
         // proses verifikasi token 
         (0, jsonwebtoken_1.verify)(token, secretkey, error => {
             if (error) {
@@ -37,3 +37,29 @@ const verifyAdmin = (request, response, next) => __awaiter(void 0, void 0, void 
     }
 });
 exports.verifyAdmin = verifyAdmin;
+const verifyUser = (request, response, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // membaca data header request
+        const header = request.headers.authorization;
+        // membaca data token yang dikirimkan 
+        const token = (header === null || header === void 0 ? void 0 : header.split(" ")[1]) || '';
+        const secretkey = 'user☝️';
+        // proses verifikasi token 
+        (0, jsonwebtoken_1.verify)(token, secretkey, error => {
+            if (error) {
+                return response.status(401).json({
+                    status: false,
+                    message: 'Unauthorized'
+                });
+            }
+            next();
+        });
+    }
+    catch (error) {
+        return response.status(500).json({
+            status: false,
+            message: error,
+        });
+    }
+});
+exports.verifyUser = verifyUser;

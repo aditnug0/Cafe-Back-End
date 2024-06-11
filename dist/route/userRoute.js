@@ -6,15 +6,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const verify_1 = require("../middleware/verify");
 const verifytoken_1 = require("../middleware/verifytoken");
-const adminController_1 = require("../controller/adminController");
+const userController_1 = require("../controller/userController");
 const app = (0, express_1.default)();
 // allow to read json from the body
 app.use(express_1.default.json());
 // adress for get admin data
-app.get(`/admin`, verify_1.verifyAdmin, adminController_1.readAdmin);
+app.get(`/user`, verify_1.verifyUser, userController_1.readUser);
 // adress for add new admin
-app.post(`/admin`, verify_1.verifyAdmin, verifytoken_1.verifyAddAU, adminController_1.createAdmin);
-app.put(`/admin/:adminId`, verify_1.verifyAdmin, verifytoken_1.verifyEditAU, adminController_1.updateAdmin);
-app.delete(`/admin/:adminId`, verify_1.verifyAdmin, adminController_1.deleteAdmin);
-app.post(`/admin/login`, verifytoken_1.verifyAuthentication, adminController_1.loginAdmin);
+app.post(`/user`, verifytoken_1.verifyAddAU, userController_1.createUser);
+app.put(`/user/:userId`, verify_1.verifyUser, verifytoken_1.verifyEditAU, userController_1.updateUser);
+app.delete(`/user/:userId`, verify_1.verifyUser, userController_1.deleteUser);
+app.post(`/user/login`, verifytoken_1.verifyAuthentication, userController_1.loginUser);
 exports.default = app;

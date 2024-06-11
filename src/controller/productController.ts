@@ -29,6 +29,7 @@ export const readProduct = async (request: Request, response: Response) => {
     }
 }
 
+
 export const createProduct = async (request: Request, response: Response) => {
     try {
         const { name, qty, description, price } = request.body /** get requested data (data has been sent from request) */
